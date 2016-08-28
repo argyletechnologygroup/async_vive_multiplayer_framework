@@ -1,0 +1,1 @@
+To use unity's smartmerge feature, make sure to follow the instructions at this article: https://docs.unity3d.com/Manual/SmartMerge.html
