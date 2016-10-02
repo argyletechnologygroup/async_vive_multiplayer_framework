@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Diagnostics;
-using System.Collections;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 public class BuildScript
 {
@@ -13,7 +15,7 @@ public class BuildScript
         public BuildPaths(string executableName, string[] scenes)
         {
             this.executableName = executableName;
-            this.scenes = scenes;
+            this.scenes = makeScenePathList(scenes);
         }
 
         public string Executable
@@ -25,17 +27,29 @@ public class BuildScript
         {
             get { return scenes; }
         }
+
+        private static string[] makeScenePathList(string[] scenes) {
+            return (
+                from scene in scenes
+                let scenePath = string.Format("Assets/game/scenes/{0}.unity", scene)
+                select scenePath
+            ).ToArray();
+        }
     }
 
-    private static BuildPaths vrClientPaths = new BuildPaths("Client_VR.exe", new string[] { "Assets/game/scenes/connect-menu_vrclient.unity" });
-    private static BuildPaths clientPaths = new BuildPaths("Client.exe", new string[] { "Assets/game/scenes/connect-menu_client.unity" });
-    private static BuildPaths serverPaths = new BuildPaths("Server.exe", new string[] { "Assets/game/scenes/connect-menu_server.unity" });
+    private static BuildPaths vrClientPaths = new BuildPaths("viventure_VR.exe", new string[] { "connect-menu_vrclient", "lobby" });
+    private static BuildPaths clientPaths = new BuildPaths("viventure.exe", new string[] { "connect-menu_client", "lobby" });
+    private static BuildPaths serverPaths = new BuildPaths("viventure_dedicated.exe", new string[] { "connect-menu_server", "lobby" });
+
+    //private static BuildPaths vrClientPaths = new BuildPaths("Client_VR.exe",   new string[] { "lobby" });
+    //private static BuildPaths clientPaths = new BuildPaths("Client.exe",        new string[] { "lobby" });
+    //private static BuildPaths serverPaths = new BuildPaths("Server.exe",        new string[] { "lobby" });
 
     [MenuItem("Bulid/Build All")]
     public static void BuildGame()
     {
         string path = EditorUtility.SaveFolderPanel("Choose Location of Built Games", "", "");
-        BuildServer(path);
+        //BuildServer(path);
         BuildVRClient(path);
         BuildClient(path);
     }
@@ -66,15 +80,7 @@ public class BuildScript
         //Build VR
         PlayerSettings.virtualRealitySupported = false;
         PlayerSettings.productName = "Viventure Server";
-        BuildPipeline.BuildPlayer( serverPaths.Scenes, path + "/" + serverPaths.Executable, BuildTarget.StandaloneWindows, BuildOptions.None);
-    }
-
-    private static void BuildVRClient(string path)
-    {
-        //Build VR
-        PlayerSettings.virtualRealitySupported = true;
-        PlayerSettings.productName = "Viventure VR Client";
-        BuildPipeline.BuildPlayer( vrClientPaths.Scenes, path + "/" + vrClientPaths.Executable, BuildTarget.StandaloneWindows, BuildOptions.None);
+        BuildPipeline.BuildPlayer( serverPaths.Scenes, path + "/" + serverPaths.Executable, BuildTarget.StandaloneWindows, BuildOptions.Development);
     }
 
     private static void BuildClient(string path)
@@ -82,6 +88,14 @@ public class BuildScript
         //Build VR
         PlayerSettings.virtualRealitySupported = false;
         PlayerSettings.productName = "Viventure Client";
-        BuildPipeline.BuildPlayer( clientPaths.Scenes, path + "/" + clientPaths.Executable, BuildTarget.StandaloneWindows, BuildOptions.None);
+        BuildPipeline.BuildPlayer( clientPaths.Scenes, path + "/" + clientPaths.Executable, BuildTarget.StandaloneWindows, BuildOptions.Development);
+    }
+
+    private static void BuildVRClient(string path)
+    {
+        //Build VR
+        PlayerSettings.virtualRealitySupported = true;
+        PlayerSettings.productName = "Viventure VR Client";
+        BuildPipeline.BuildPlayer( vrClientPaths.Scenes, path + "/" + vrClientPaths.Executable, BuildTarget.StandaloneWindows, BuildOptions.Development);
     }
 }
