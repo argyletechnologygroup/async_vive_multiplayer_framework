@@ -16,7 +16,7 @@ public class CustomNetworkManager : NetworkManager {
 
 		bool isVrPlayer = message.isVrPlayer;
 
-		Transform spawnPoint = this.startPositions [playerCount];
+		Transform spawnPoint = this.startPositions [playerCount % this.startPositions.Count];
 
 		GameObject newPlayer;
 		if (isVrPlayer) {
@@ -34,7 +34,9 @@ public class CustomNetworkManager : NetworkManager {
 		playerCount--;
 	}
 
-	void Start () {
+	void Start ()
+    {
+        /*
 		var settingsPath = Application.dataPath + "/settings.cfg";
         if (File.Exists (settingsPath)) {
 			StreamReader textReader = new StreamReader (settingsPath, System.Text.Encoding.ASCII);
@@ -52,6 +54,7 @@ public class CustomNetworkManager : NetworkManager {
 		{
 			StartClient ();
 		}
+        */
 	}
 
 	public override void OnClientConnect (NetworkConnection conn)
