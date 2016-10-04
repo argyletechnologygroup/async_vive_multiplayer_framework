@@ -14,7 +14,7 @@ public class Health : NetworkBehaviour
 	{
 		if (isLocalPlayer)
 		{
-			spawnPoints = FindObjectsOfType<NetworkStartPosition>();
+			spawnPoints = FindObjectsOfType<NetworkStartPosition>(); //TODO performance issue, replace with search
 		}
 	}
 

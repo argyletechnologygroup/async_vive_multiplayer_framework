@@ -50,8 +50,8 @@ public class BuildScript
     {
         string path = EditorUtility.SaveFolderPanel("Choose Location of Built Games", "", "");
         //BuildServer(path);
-        BuildVRClient(path);
         BuildClient(path);
+        BuildVRClient(path);
     }
 
     [MenuItem("Bulid/Build Server")]
