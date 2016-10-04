@@ -14,8 +14,11 @@ public class VRPlayerController : NetworkBehaviour
 	{
 		if (!isClient)
 			return;
-		// delete main camera
-		DestroyImmediate (Camera.main.gameObject);
+        // delete main camera
+        if (Camera.main)
+        {
+            DestroyImmediate(Camera.main.gameObject);
+        }
 
 		// create camera rig and attach player model to it
 		vrCameraRigInstance = (GameObject)Instantiate (
