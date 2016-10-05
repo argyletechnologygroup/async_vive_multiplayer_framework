@@ -34,7 +34,7 @@ public class VRPlayerController : NetworkBehaviour
 		transform.parent = head.transform;
         transform.localPosition = new Vector3(0f, -0.03f, -0.06f);
 
-		TryDetectControllers ();
+		//TryDetectControllers ();
 	}
 
 	void TryDetectControllers ()

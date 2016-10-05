@@ -11,7 +11,7 @@ public class BulletFireController : NetworkBehaviour
 
 	public override void OnStartLocalPlayer()
 	{
-		GetComponent<Renderer>().material.color = Color.blue;
+		GetComponentInChildren<Renderer>().material.color = Color.blue;
 	}
 
 	void Update()
