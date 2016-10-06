@@ -5,7 +5,7 @@ using UnityEditor;
 
 [RequireComponent (typeof (Rigidbody))]
 [DisallowMultipleComponent]
-public class ViveGrip_Grabbable : ViveGrip_Highlight {
+public class ViveGrip_Grabbable : MonoBehaviour {
   public enum RotationMode { Disabled, ApplyGrip, ApplyGripAndOrientation }
   [System.Serializable]
   public class Position {
@@ -25,17 +25,23 @@ public class ViveGrip_Grabbable : ViveGrip_Highlight {
   public Rotation rotation;
   private Vector3 grabCentre;
 
-  void Start() {}
+  void Start() {
+    ViveGrip_Highlighter.AddTo(gameObject);
+  }
 
   // These are called this on the scripts of the attached object and children of the controller:
 
-  // Called When touched and moved away from, respectively
+  // Called when touched and moved away from, respectively
   //   void ViveGripTouchStart(ViveGrip_GripPoint gripPoint) {}
   //   void ViveGripTouchStop(ViveGrip_GripPoint gripPoint) {}
 
   // Called when touched and the grab button is pressed and released, respectively
   //   void ViveGripGrabStart(ViveGrip_GripPoint gripPoint) {}
   //   void ViveGripGrabStop(ViveGrip_GripPoint gripPoint) {}
+
+  // Called when highlighting changes
+  //   void ViveGripHighlightStart(ViveGrip_GripPoint gripPoint) {}
+  //   void ViveGripHighlightStop(ViveGrip_GripPoint gripPoint) {}
 
   public void OnDrawGizmosSelected() {
     if (anchor != null && anchor.enabled) {

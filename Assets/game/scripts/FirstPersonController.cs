@@ -49,7 +49,7 @@ namespace AsycViveMultiplayerFramework.Characters.FirstPerson
         [SerializeField]
         private AudioClip m_LandSound;           // the sound played when character touches back on ground.
 
-        private Camera m_Camera;
+        public Camera m_Camera;
         private bool m_Jump;
         private float m_YRotation;
         private Vector2 m_Input;
@@ -74,7 +74,7 @@ namespace AsycViveMultiplayerFramework.Characters.FirstPerson
             //only perform this initialization for the local player
             if (isLocalPlayer)
             {
-                m_Camera = Camera.main;
+                //m_Camera = Camera.main;
                 m_OriginalCameraPosition = m_Camera.transform.localPosition;
                 m_FovKick.Setup(m_Camera);
                 m_HeadBob.Setup(m_Camera, m_StepInterval);

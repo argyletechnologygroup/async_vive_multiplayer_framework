@@ -13,45 +13,44 @@ public class ViveGrip_GripPoint : MonoBehaviour {
   public bool inputIsToggle = false;
   [HideInInspector]
   public ViveGrip_ControllerHandler controller;
-  public const string GRIP_SPHERE_NAME = "ViveGrip Touch Sphere";
+  [HideInInspector]
+  public ViveGrip_Grabber grabber;
   private ViveGrip_TouchDetection touch;
-  private Color highlightTint = new Color(0.2f, 0.2f, 0.2f);
-  private ConfigurableJoint joint;
-  private GameObject jointObject;
+  private const string GRIP_SPHERE_NAME = "ViveGrip Touch Sphere";
   private bool firmlyGrabbed = false;
   private bool externalGrabTriggered = false;
-  private Vector3 grabbedAt;
   private GameObject lastTouchedObject;
   private GameObject lastInteractedObject;
 
   void Start() {
     controller = GetComponent<ViveGrip_ControllerHandler>();
+    grabber = gameObject.AddComponent<ViveGrip_Grabber>();
     GameObject gripSphere = InstantiateTouchSphere();
     touch = gripSphere.AddComponent<ViveGrip_TouchDetection>();
     touch.radius = touchRadius;
-	}
+  }
 
   void Update() {
-    GameObject touchedObject = touch.NearestObject();
-    HandleHighlighting(touchedObject);
+    GameObject touchedObject = TouchedObject();
+    HandleTouching(touchedObject);
     HandleGrabbing(touchedObject);
     HandleInteraction(touchedObject);
     HandleFumbling();
     lastTouchedObject = touchedObject;
   }
 
-  void HandleGrabbing(GameObject touchedObject) {
+  void HandleGrabbing(GameObject givenObject) {
     if (!GrabTriggered() && !externalGrabTriggered) { return; }
     externalGrabTriggered = false;
-    if (HoldingSomething()) {
-      if (touchedObject != null) {
-        GetHighlight(touchedObject).Highlight(highlightTint);
+    if (grabber.HoldingSomething()) {
+      if (givenObject != null) {
+        Message("ViveGripHighlightStart", givenObject);
       }
       DestroyConnection();
     }
-    else if (touchedObject != null && touchedObject.GetComponent<ViveGrip_Grabbable>() != null) {
-      GetHighlight(touchedObject).RemoveHighlighting();
-      CreateConnectionTo(touchedObject.GetComponent<Rigidbody>());
+    else if (givenObject != null && givenObject.GetComponent<ViveGrip_Grabbable>() != null) {
+      Message("ViveGripHighlightStop", givenObject);
+      Message("ViveGripGrabStart", givenObject);
     }
   }
 
@@ -60,48 +59,16 @@ public class ViveGrip_GripPoint : MonoBehaviour {
     if (inputIsToggle) {
       return controller.Pressed("grab");
     }
-    return HoldingSomething() ? controller.Released("grab") : controller.Pressed("grab");
+    return grabber.HoldingSomething() ? controller.Released("grab") : controller.Pressed("grab");
   }
 
-  void HandleInteraction(GameObject touchedObject) {
-    if (HoldingSomething()) {
-      touchedObject = joint.connectedBody.gameObject;
-    }
-    if (touchedObject != null) {
-      if (touchedObject.GetComponent<ViveGrip_Interactable>() == null) { return; }
-      if (controller.Pressed("interact")) {
-        lastInteractedObject = touchedObject;
-        Message("ViveGripInteractionStart");
-      }
-    }
-    if (controller.Released("interact")) {
-      Message("ViveGripInteractionStop", lastInteractedObject);
-      lastInteractedObject = null;
-    }
-  }
-
-  void HandleHighlighting(GameObject touchedObject) {
-    ViveGrip_Highlight last = GetHighlight(lastTouchedObject);
-    ViveGrip_Highlight current = GetHighlight(touchedObject);
-    if (last != current) {
-      if (last != null) {
-        last.RemoveHighlighting();
-        Message("ViveGripTouchStop", last.gameObject);
-      }
-      if (current != null && !HoldingSomething()) {
-        current.Highlight(highlightTint);
-        Message("ViveGripTouchStart");
-      }
-    }
-  }
-
-  ViveGrip_Highlight GetHighlight(GameObject touchedObject) {
-    if (touchedObject == null) { return null; }
-    return touchedObject.GetComponent<ViveGrip_Highlight>();
+  void DestroyConnection() {
+    firmlyGrabbed = false;
+    Message("ViveGripGrabStop", HeldObject());
   }
 
   void HandleFumbling() {
-    if (HoldingSomething()) {
+    if (grabber.HoldingSomething()) {
       float grabDistance = CalculateGrabDistance();
       bool withinRadius = grabDistance <= holdRadius;
       firmlyGrabbed = firmlyGrabbed || withinRadius;
@@ -112,35 +79,43 @@ public class ViveGrip_GripPoint : MonoBehaviour {
   }
 
   float CalculateGrabDistance() {
-    ViveGrip_Grabbable grabbable = joint.connectedBody.gameObject.GetComponent<ViveGrip_Grabbable>();
+    ViveGrip_Grabbable grabbable = grabber.ConnectedGameObject().GetComponent<ViveGrip_Grabbable>();
     Vector3 grabbedAnchorPosition = grabbable.WorldAnchorPosition();
     return Vector3.Distance(transform.position, grabbedAnchorPosition);
   }
 
-  void CreateConnectionTo(Rigidbody desiredBody) {
-    jointObject = InstantiateJointParent();
-    desiredBody.gameObject.GetComponent<ViveGrip_Grabbable>().GrabFrom(transform.position);
-    joint = ViveGrip_JointFactory.JointToConnect(jointObject, desiredBody, transform.rotation);
-    Message("ViveGripGrabStart");
+  void HandleInteraction(GameObject givenObject) {
+    if (grabber.HoldingSomething()) {
+      givenObject = grabber.ConnectedGameObject();
+    }
+    if (givenObject == null || givenObject.GetComponent<ViveGrip_Interactable>() == null) { return; }
+    if (controller.Pressed("interact")) {
+      lastInteractedObject = givenObject;
+      Message("ViveGripInteractionStart", givenObject);
+    }
+    if (controller.Released("interact")) {
+      Message("ViveGripInteractionStop", lastInteractedObject);
+      lastInteractedObject = null;
+    }
   }
 
-  void DestroyConnection() {
-    GameObject lastObject = HeldObject();
-    Destroy(jointObject);
-    firmlyGrabbed = false;
-    Message("ViveGripGrabStop", lastObject);
+  void HandleTouching(GameObject givenObject) {
+    if (GameObjectsEqual(lastTouchedObject, givenObject)) { return; }
+    if (lastTouchedObject != null) {
+      Message("ViveGripHighlightStop", lastTouchedObject);
+      Message("ViveGripTouchStop", lastTouchedObject);
+    }
+    if (grabber.HoldingSomething()) { return; }
+    if (givenObject != null) {
+      Message("ViveGripHighlightStart", givenObject);
+      Message("ViveGripTouchStart", givenObject);
+    }
   }
 
-  GameObject InstantiateJointParent() {
-    GameObject newJointObject = new GameObject("ViveGrip Joint");
-    newJointObject.transform.parent = transform;
-    newJointObject.transform.localPosition = Vector3.zero;
-    newJointObject.transform.localScale = Vector3.one;
-    newJointObject.transform.rotation = Quaternion.identity;
-    Rigidbody jointRigidbody = newJointObject.AddComponent<Rigidbody>();
-    jointRigidbody.useGravity = false;
-    jointRigidbody.isKinematic = true;
-    return newJointObject;
+  bool GameObjectsEqual(GameObject first, GameObject second) {
+    if (first == null && second == null) { return true; }
+    if (first == null || second == null) { return false; }
+    return first.GetInstanceID() == second.GetInstanceID();
   }
 
   GameObject InstantiateTouchSphere() {
@@ -161,31 +136,34 @@ public class ViveGrip_GripPoint : MonoBehaviour {
     return gripSphere;
   }
 
-  public bool HoldingSomething() {
-    return jointObject != null;
+  public bool TouchingSomething() {
+    return TouchedObject() != null;
   }
 
-  public bool TouchingSomething() {
-    return touch.NearestObject() != null;
+  public GameObject TouchedObject() {
+    return touch.NearestObject();
+  }
+
+  public bool HoldingSomething() {
+    return grabber.HoldingSomething();
   }
 
   public GameObject HeldObject() {
-    if (!HoldingSomething()) { return null; }
-    return jointObject.GetComponent<ConfigurableJoint>().connectedBody.gameObject;
+    if (!grabber.HoldingSomething()) { return null; }
+    return grabber.ConnectedGameObject();
   }
 
   public void ToggleGrab() {
     externalGrabTriggered = true;
   }
 
-  GameObject TrackedObject() {
+  public GameObject TrackedObject() {
     return controller.trackedObject.gameObject;
   }
 
-  void Message(string name, GameObject touchedObject = null) {
+  void Message(string name, GameObject objectToMessage) {
     TrackedObject().BroadcastMessage(name, this, SendMessageOptions.DontRequireReceiver);
-    touchedObject = touchedObject ?? touch.NearestObject();
-    if (touchedObject == null) { return; }
-    touchedObject.SendMessage(name, this, SendMessageOptions.DontRequireReceiver);
+    if (objectToMessage == null) { return; }
+    objectToMessage.SendMessage(name, this, SendMessageOptions.DontRequireReceiver);
   }
 }

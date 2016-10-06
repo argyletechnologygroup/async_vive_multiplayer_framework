@@ -79,6 +79,7 @@ public class BuildScript
     {
         //Build VR
         PlayerSettings.virtualRealitySupported = false;
+        UnityEngine.VR.VRSettings.enabled = false;
         PlayerSettings.productName = "Viventure Server";
         BuildPipeline.BuildPlayer( serverPaths.Scenes, path + "/" + serverPaths.Executable, BuildTarget.StandaloneWindows, BuildOptions.Development);
     }
@@ -87,6 +88,7 @@ public class BuildScript
     {
         //Build VR
         PlayerSettings.virtualRealitySupported = false;
+        UnityEngine.VR.VRSettings.enabled = false;
         PlayerSettings.productName = "Viventure Client";
         BuildPipeline.BuildPlayer( clientPaths.Scenes, path + "/" + clientPaths.Executable, BuildTarget.StandaloneWindows, BuildOptions.Development);
     }
@@ -95,6 +97,7 @@ public class BuildScript
     {
         //Build VR
         PlayerSettings.virtualRealitySupported = true;
+        UnityEngine.VR.VRSettings.enabled = true;
         PlayerSettings.productName = "Viventure VR Client";
         BuildPipeline.BuildPlayer( vrClientPaths.Scenes, path + "/" + vrClientPaths.Executable, BuildTarget.StandaloneWindows, BuildOptions.Development);
     }

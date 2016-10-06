@@ -5,9 +5,17 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
+  - enabled: 0
+    path: Assets/game/scenes/connect-menu_vrclient.unity
+  - enabled: 1
+    path: Assets/game/scenes/connect-menu_client.unity
+  - enabled: 0
+    path: Assets/game/scenes/connect-menu_server.unity
   - enabled: 1
     path: Assets/game/scenes/lobby.unity
   - enabled: 0
+    path: Assets/game/scenes/lobby_.unity
+  - enabled: 0
     path: Assets/game/scenes/main.unity
-  - enabled: 1
-    path: Assets/game/scenes/connect-menu_client.unity
+  - enabled: 0
+    path: Assets/game/scenes/lobby_.unity
