@@ -8,10 +8,6 @@ public class LocalPlayerCamera : NetworkBehaviour
 
 	// Use this for initialization
 	void Start () {
-        if (isLocalPlayer)
-        {
-           tag = "MainCamera";
-        }
 	}
 	
 	// Update is called once per frame

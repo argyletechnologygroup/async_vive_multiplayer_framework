@@ -75,11 +75,15 @@ namespace AsycViveMultiplayerFramework.Characters.FirstPerson
             if (isLocalPlayer)
             {
                 //m_Camera = Camera.main;
+	            m_Camera.tag = "MainCamera"; //set this camera as a main camera only for the local player
                 m_OriginalCameraPosition = m_Camera.transform.localPosition;
                 m_FovKick.Setup(m_Camera);
                 m_HeadBob.Setup(m_Camera, m_StepInterval);
                 m_MouseLook.Init(transform, m_Camera.transform);
             }
+
+            m_Camera.enabled = isLocalPlayer;
+            //TODO warn/log if this is not connected over a network, as this script always presumes a networked game
         }
 
         // Update is called once per frame
