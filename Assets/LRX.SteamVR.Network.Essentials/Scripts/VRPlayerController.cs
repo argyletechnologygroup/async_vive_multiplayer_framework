@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
 using System;
@@ -8,11 +8,13 @@ public class VRPlayerController : NetworkBehaviour
 	public GameObject vrCameraRig;
 	public GameObject leftHandPrefab;
     public GameObject rightHandPrefab;
-    private GameObject vrCameraRigInstance;
+	private GameObject vrCameraRigInstance;
+	private GameObject leftHand = null;
+	private GameObject rightHand = null;
 
 	public override void OnStartLocalPlayer ()
 	{
-		if (!isClient)
+		if (!isLocalPlayer)
 			return;
         // delete main camera
         if (Camera.main)
@@ -33,42 +35,58 @@ public class VRPlayerController : NetworkBehaviour
 		GameObject head = vrCameraRigInstance.GetComponentInChildren<SteamVR_Camera> ().gameObject;
 		transform.parent = head.transform;
         transform.localPosition = new Vector3(0f, -0.03f, -0.06f);
-
-		//TryDetectControllers ();
+		
+		StartCoroutine(TryDetectControllers());
 	}
 
-	void TryDetectControllers ()
+	IEnumerable TryDetectControllers ()
 	{
-		var controllers = vrCameraRigInstance.GetComponentsInChildren<SteamVR_TrackedObject> ();
-        if (controllers != null && controllers.Length == 2 && controllers[0] != null && controllers[1] != null)
-        {
-			CmdSpawnHands(netId);
-        }
-        else
-        {
-            Invoke("TryDetectControllers", 2f);
-        }
+		SteamVR_TrackedObject[] controllers;
+		bool firstRun = true;
+		do{
+			controllers = vrCameraRigInstance.GetComponentsInChildren<SteamVR_TrackedObject> ();
+			yield return new WaitForSeconds(2);
+			if(firstRun){
+				firstRun = false;
+				yield return new WaitForSeconds(2);
+			}
+		}while(controllers == null || controllers.Length < 1  || controllers[0] == null);
+		CmdSpawnLeftHand(netId);
+		
+		//attempt to spawn right hand
+		firstRun = true;
+		do{
+			controllers = vrCameraRigInstance.GetComponentsInChildren<SteamVR_TrackedObject> ();
+			if(firstRun){
+				firstRun = false;
+				yield return new WaitForSeconds(2);
+			}
+		}while(controllers == null || controllers.Length < 2  || controllers[1] == null);
+		CmdSpawnRightHand(netId);
 	}
-
-	[Command]
-	void CmdSpawnHands(NetworkInstanceId playerId)
-	{
+	
+	GameObject SpawnHand(NetworkInstanceId playerId, GameObject handPrefab, HandSide side){
         // instantiate controllers
         // tell the server, to spawn two new networked controller model prefabs on all clients
         // give the local player authority over the newly created controller models
-        GameObject leftHand = Instantiate(leftHandPrefab);
-		GameObject rightHand = Instantiate(rightHandPrefab);
+		GameObject hand = Instantiate(handPrefab);
+		var vrHand = hand.GetComponent<NetworkVRHands> ();
+		vrHand.side = side;
+		vrHand.ownerId = playerId;
+		NetworkServer.SpawnWithClientAuthority (hand, base.connectionToClient);
+		return vrHand;
+	}
+	
+	[Command]
+	void CmdSpawnLeftHand(NetworkInstanceId playerId)
+	{
+		SpawnHand(playerId, leftHandPrefab, HandSide.Left);
+	}
 
-		var leftVRHand = leftHand.GetComponent<NetworkVRHands> ();
-		var rightVRHand = rightHand.GetComponent<NetworkVRHands> ();
-
-		leftVRHand.side = HandSide.Left;
-		rightVRHand.side = HandSide.Right;
-        leftVRHand.ownerId = playerId;
-		rightVRHand.ownerId = playerId;
-
-		NetworkServer.SpawnWithClientAuthority (leftHand, base.connectionToClient);
-		NetworkServer.SpawnWithClientAuthority (rightHand, base.connectionToClient);
+	[Command]
+	void CmdSpawnRightHand(NetworkInstanceId playerId)
+	{
+		SpawnHand(playerId, rightHandPrefab, HandSide.Right);
 	}
 
 	[Command]
