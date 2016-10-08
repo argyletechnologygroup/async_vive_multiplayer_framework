@@ -39,28 +39,29 @@ public class VRPlayerController : NetworkBehaviour
 		StartCoroutine(TryDetectControllers());
 	}
 
-	IEnumerable TryDetectControllers ()
+	IEnumerator TryDetectControllers ()
 	{
 		SteamVR_TrackedObject[] controllers;
 		bool firstRun = true;
 		do{
-			controllers = vrCameraRigInstance.GetComponentsInChildren<SteamVR_TrackedObject> ();
-			yield return new WaitForSeconds(2);
-			if(firstRun){
-				firstRun = false;
-				yield return new WaitForSeconds(2);
-			}
+			if(!firstRun){
+                yield return new WaitForSeconds(2);
+            }
+            firstRun = false;
+            controllers = vrCameraRigInstance.GetComponentsInChildren<SteamVR_TrackedObject> ();
 		}while(controllers == null || controllers.Length < 1  || controllers[0] == null);
 		CmdSpawnLeftHand(netId);
 		
 		//attempt to spawn right hand
 		firstRun = true;
-		do{
-			controllers = vrCameraRigInstance.GetComponentsInChildren<SteamVR_TrackedObject> ();
-			if(firstRun){
-				firstRun = false;
-				yield return new WaitForSeconds(2);
-			}
+		do
+        {
+            if (!firstRun)
+            {
+                yield return new WaitForSeconds(2);
+            }
+            firstRun = false;
+            controllers = vrCameraRigInstance.GetComponentsInChildren<SteamVR_TrackedObject> ();
 		}while(controllers == null || controllers.Length < 2  || controllers[1] == null);
 		CmdSpawnRightHand(netId);
 	}
@@ -74,7 +75,7 @@ public class VRPlayerController : NetworkBehaviour
 		vrHand.side = side;
 		vrHand.ownerId = playerId;
 		NetworkServer.SpawnWithClientAuthority (hand, base.connectionToClient);
-		return vrHand;
+		return vrHand.gameObject;
 	}
 	
 	[Command]
