@@ -1,21 +1,3 @@
-%YAML 1.1
-%TAG !u! tag:unity3d.com,2011:
---- !u!1045 &1
-EditorBuildSettings:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Scenes:
-  - enabled: 0
-    path: Assets/game/scenes/connect-menu_vrclient.unity
-  - enabled: 1
-    path: Assets/game/scenes/connect-menu_client.unity
-  - enabled: 0
-    path: Assets/game/scenes/connect-menu_server.unity
-  - enabled: 1
-    path: Assets/game/scenes/lobby.unity
-  - enabled: 0
-    path: Assets/game/scenes/lobby_.unity
-  - enabled: 0
-    path: Assets/game/scenes/main.unity
-  - enabled: 0
-    path: Assets/game/scenes/lobby_.unity
+version https://git-lfs.github.com/spec/v1
+oid sha256:01dfdb55119d1b985993dede38b8442c67474f4e8c31c5d54b3e5ce1e9fa25c9
+size 3884
