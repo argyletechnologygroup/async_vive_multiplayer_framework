@@ -258,13 +258,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd0ce3079cdb6a646a75f65cec8e8714, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_innerSpotPercent: 100
-  m_shadowResolution: 8192
-  m_shadowNearClipPlane: 1
-  m_shadowCastLayerMask: {}
-  m_directionalLightShadowRadius: 25
-  m_directionalLightShadowRange: 25
-  m_useOcclusionCullingForShadows: 0
 --- !u!108 &343008122
 Light:
   m_ObjectHideFlags: 0
