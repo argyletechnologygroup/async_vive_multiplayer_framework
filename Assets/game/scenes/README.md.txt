@@ -1,0 +1,1 @@
+The main screen will start the game, and load the game controller. All other scenes are child scenes loaded by the game controller.
